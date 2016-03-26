@@ -1,8 +1,7 @@
 {
   "name": "webpack-boilerplate",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "webpack boilerplate",
-  "main": "index.js",
   "scripts": {
     "start-dev": "node server/app",
     "build": "gulp",
@@ -11,15 +10,6 @@
   "localServer": {
     "port": 3010
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/liupy525/webpack-boilerplate.git"
-  },
-  "keywords": [
-    "webpack",
-    "boilerplate"
-  ],
-  "author": "liupy525",
   "devDependencies": {
     "babel-core": "^6.7.4",
     "babel-loader": "^6.2.4",
@@ -50,9 +40,6 @@
     "webpack": "^1.12.14",
     "webpack-hot-middleware": "^2.10.0"
   },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/liupy525/webpack-boilerplate/issues"
-  },
-  "homepage": "https://github.com/liupy525/webpack-boilerplate#readme"
+  "author": "liupy525",
+  "license": "MIT"
 }
