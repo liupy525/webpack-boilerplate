@@ -7,6 +7,7 @@ let glob = require('glob')
 
 let ExtractTextPlugin = require('extract-text-webpack-plugin')
 let HtmlWebpackPlugin = require('html-webpack-plugin')
+let autoprefixer = require('autoprefixer');
 
 let UglifyJsPlugin = webpack.optimize.UglifyJsPlugin
 let CommonsChunkPlugin = webpack.optimize.CommonsChunkPlugin
@@ -66,12 +67,12 @@ module.exports = (options) => {
 
     if(debug) {
         // 开发阶段，css直接内嵌
-        cssLoader = 'style!css?sourceMap'
-        scssLoader = 'style!css?sourceMap!sass?sourceMap'
+        cssLoader = 'style!css?sourceMap!postcss'
+        scssLoader = 'style!css?sourceMap!postcss!sass?sourceMap'
     } else {
         // 编译阶段，css分离出来单独引入
-        cssLoader = ExtractTextPlugin.extract('style', 'css?minimize') // enable minimize
-        scssLoader = ExtractTextPlugin.extract('style', 'css?minimize!sass')
+        cssLoader = ExtractTextPlugin.extract('style', 'css?minimize!postcss') // enable minimize
+        scssLoader = ExtractTextPlugin.extract('style', 'css?minimize!postcss!sass')
 
         plugins.push(
             new ExtractTextPlugin('css/[contenthash:8].[name].min.css', {
@@ -140,6 +141,9 @@ module.exports = (options) => {
             //     chunks: ['common']
             // })
         ].concat(plugins),
+
+        // postcss-loader配置
+        postcss: [ autoprefixer({ browsers: ['last 3 versions'] }) ],
 
         devServer: {
             hot: true,
