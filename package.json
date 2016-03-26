@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "description": "webpack boilerplate",
   "scripts": {
-    "start-dev": "node server/app",
+    "dev": "node server/app",
     "build": "gulp",
-    "start-release": "node server/app production"
+    "release": "node server/app production"
   },
   "localServer": {
     "port": 3010
