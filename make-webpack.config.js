@@ -47,7 +47,7 @@ module.exports = (options) => {
         entryHtml.forEach((filePath) => {
             let filename = filePath.substring(filePath.lastIndexOf('\/') + 1, filePath.lastIndexOf('.'))
             let conf = {
-                template: 'html!' + filePath,
+                template: 'html?attrs=img:src link:href!' + filePath,
                 filename: filename + '.html'
             }
 
@@ -57,7 +57,7 @@ module.exports = (options) => {
                 // conf.chunks = ['vender', 'common', filename]
             }
 
-            if(/b|c/.test(filename)) conf.chunks.splice(2, 0, 'common-b-c')
+            // if(/b|c/.test(filename)) conf.chunks.splice(2, 0, 'common-b-c')
 
             r.push(new HtmlWebpackPlugin(conf))
         })
@@ -112,7 +112,7 @@ module.exports = (options) => {
         module: {
             loaders: [
                 {
-                    test: /\.(jpe?g|png|gif|svg)$/i,
+                    test: /\.(jpe?g|png|gif|svg|ico)$/i,
                     loaders: [
                         'url?limit=10000&name=img/[hash:8].[name].[ext]',
                     ]
