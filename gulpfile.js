@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 let gulp = require('gulp')
 let webpack = require('webpack')

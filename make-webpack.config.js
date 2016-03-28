@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 let path = require('path')
 
@@ -7,14 +7,14 @@ let glob = require('glob')
 
 let ExtractTextPlugin = require('extract-text-webpack-plugin')
 let HtmlWebpackPlugin = require('html-webpack-plugin')
-let autoprefixer = require('autoprefixer');
+let autoprefixer = require('autoprefixer')
 
 let UglifyJsPlugin = webpack.optimize.UglifyJsPlugin
 let CommonsChunkPlugin = webpack.optimize.CommonsChunkPlugin
 
 let srcDir = path.resolve(process.cwd(), 'src')
 let nodeModPath = path.resolve(__dirname, './node_modules')
-let assets = 'assets/'
+let assets = path.resolve(process.cwd(), 'assets')
 let pathMap = require('./src/pathmap.json')
 
 let entries = (() => {
@@ -27,7 +27,7 @@ let entries = (() => {
         map[filename] = filePath
     })
 
-    return map;
+    return map
 }())
 
 module.exports = (options) => {
@@ -35,7 +35,7 @@ module.exports = (options) => {
 
     let debug = options.debug !== undefined ? options.debug : true
     let cssLoader
-    let scssLoader
+    let sassLoader
 
     // generate entry html files
     // 自动生成入口文件，入口js名必须和入口文件名相同
@@ -68,11 +68,11 @@ module.exports = (options) => {
     if(debug) {
         // 开发阶段，css直接内嵌
         cssLoader = 'style!css?sourceMap!postcss'
-        scssLoader = 'style!css?sourceMap!postcss!sass?sourceMap'
+        sassLoader = 'style!css?sourceMap!postcss!sass?sourceMap'
     } else {
         // 编译阶段，css分离出来单独引入
         cssLoader = ExtractTextPlugin.extract('style', 'css?minimize!postcss') // enable minimize
-        scssLoader = ExtractTextPlugin.extract('style', 'css?minimize!postcss!sass')
+        sassLoader = ExtractTextPlugin.extract('style', 'css?minimize!postcss!sass')
 
         plugins.push(
             new ExtractTextPlugin('css/[contenthash:8].[name].min.css', {
@@ -84,16 +84,29 @@ module.exports = (options) => {
             })
         )
 
-        plugins.push(new UglifyJsPlugin())
+        plugins.push(
+            new UglifyJsPlugin({
+                compress: {
+                    warnings: false
+                },
+                output: {
+                    comments: false
+                },
+                mangle: {
+                    except: ['exports', 'require', 'import']
+                },
+            })
+        )
     }
 
     let config = {
         entry: Object.assign(entries, {
+            // 用到什么公共lib（例如React.js），就把它加进vender去，目的是将公用库单独提取打包
             // 'vender': ['zepto']
         }),
 
         output: {
-            path: path.resolve(assets),
+            path: assets,
             filename: debug ? '[name].js' : 'js/[chunkhash:8].[name].min.js',
             chunkFilename: debug ? '[chunkhash:8].chunk.js' : 'js/[chunkhash:8].chunk.min.js',
             hotUpdateChunkFilename: debug ? '[id].js' : 'js/[id].[chunkhash:8].min.js',
@@ -101,7 +114,9 @@ module.exports = (options) => {
 
         resolve: {
             root: [srcDir, './node_modules'],
-            alias: pathMap,
+            alias: Object.assign({
+                    // 'react': path.join(nodeModPath, '/react/dist/react.js'),
+                }, pathMap),
             extensions: ['', '.js', '.css', '.scss', '.tpl', '.png', '.jpg']
         },
 
@@ -112,22 +127,23 @@ module.exports = (options) => {
         module: {
             loaders: [
                 {
-                    test: /\.(jpe?g|png|gif|svg|ico)$/i,
-                    loaders: [
-                        'url?limit=10000&name=img/[hash:8].[name].[ext]',
-                    ]
+                    test: /\.((woff2?|svg)(\?v=[0-9]\.[0-9]\.[0-9]))|(woff2?|svg|jpe?g|png|gif|ico)$/,
+                    loader: 'url?limit=10000&name=img/[hash:8].[name].[ext]'
                 },
                 {
-                    test: /\.(woff|eot|ttf)$/i,
+                    test: /\.((ttf|eot)(\?v=[0-9]\.[0-9]\.[0-9]))|(ttf|eot)$/,
                     loader: 'url?limit=10000&name=fonts/[hash:8].[name].[ext]'
                 },
                 {test: /\.css$/, loader: cssLoader},
-                {test: /\.scss$/, loader: scssLoader},
+                {test: /\.scss$/, loader: sassLoader},
                 {test: /\.js$/, exclude: /node_modules/, loader: 'babel?presets[]=es2015'}
             ]
         },
 
         plugins: [
+            new webpack.optimize.DedupePlugin(),
+            new webpack.NoErrorsPlugin()
+
             // new CommonsChunkPlugin({
             //     name: 'common-b-c',
             //     chunks: ['b', 'c']
@@ -160,7 +176,7 @@ module.exports = (options) => {
         // 为实现webpack-hot-middleware做相关配置
         // @see https://github.com/glenjamin/webpack-hot-middleware
         ((entry) => {
-            for  (let key of Object.keys(entry)) {
+            for (let key of Object.keys(entry)) {
                 if (! Array.isArray(entry[key])) {
                     entry[key] = Array.of(entry[key])
                 }
@@ -169,7 +185,6 @@ module.exports = (options) => {
         })(config.entry)
 
         config.plugins.push( new webpack.HotModuleReplacementPlugin() )
-        config.plugins.push( new webpack.NoErrorsPlugin() )
 
         config.devtool = 'source-map'
     }
